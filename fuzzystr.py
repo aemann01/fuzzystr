@@ -19,7 +19,7 @@ parser.add_argument('-o', '--output', help='output file', default='output.txt')
 parser.add_argument('-e', '--edit', help='desired edit distance cutoff (float)', default='0.25')
 args = parser.parse_args()
 
-def fuzzypcr():
+def fuzzystr():
 	df = pd.DataFrame(columns=["seqid", "seq", "trim", "motif", "length", "trimlen", "locus", "fwstart", "fwend", "rvstart", "rvend", "fwdist", "rvdist", "fwmatch_seq", "rvmatch_seq"])
 	record_count = 0
 	for record in SeqIO.parse(args.fastq, "fastq"):
@@ -38,8 +38,8 @@ def fuzzypcr():
 				fwprimer = fields[2]
 				rvprimer = fields[3]
 				motif = fields[4]
-				ed1 = round(len(fwprimer)*args.edit)
-				ed2 = round(len(rvprimer)*args.edit)
+				ed1 = round(len(fwprimer)*float(args.edit))
+				ed2 = round(len(rvprimer)*float(args.edit))
 				fwmatch = find_near_matches(fwprimer, seq, max_l_dist=ed1)
 				rvmatch = find_near_matches(rvprimer, seq, max_l_dist=ed2)
 
@@ -84,7 +84,7 @@ def fuzzypcr():
 	with open(args.output, "w") as output:
 		df.to_csv(output, index=False)
 
-fuzzypcr()
+fuzzystr()
 
 #def motifcount():
 	#res = [seq[i:j] for i in range(len(seq)) for j in range(i+1, len(seq) + 1)]
