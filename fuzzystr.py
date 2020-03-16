@@ -87,31 +87,15 @@ def fuzzystr():
 	with open(args.output, "w") as output:
 		df.to_csv(output, index=False)
 
-fuzzystr()
+def main():
+	assert os.path.exists(args.fasta), 'Error! File does not exist: %s. Is the path correct?' % args.fasta
+	assert os.path.exists(args.primers), 'Error! File does not exist: %s. Is the path correct?' % args.primers
 
+	fuzzystr()
 
+main()
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+__author__ = "Allison E. Mann"
+__license__ = "GPL"
+__version__ = "1.0"
+__email__ = "allison.e.mann@gmail.com"
