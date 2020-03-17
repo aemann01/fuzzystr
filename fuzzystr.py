@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 '''
-Fuzzy match primer protocol for STR project. Use: python3 fuzzystr.py -f input.fasta -p primerFile.txt -o output.txt
+Fuzzy match primer protocol for STR project. Use: python3 fuzzystr.py -f input.fasta -p primerFile.txt > output.txt
 '''
 
 import pandas as pd
@@ -15,23 +15,21 @@ from Bio import SeqIO
 
 parser.add_argument('-f', '--fasta', help='input fasta file', required=True)
 parser.add_argument('-p', '--primers', help='list of primers', required=True)
-parser.add_argument('-o', '--output', help='output file', default='output.txt')
 parser.add_argument('-e', '--edit', help='desired edit distance cutoff (float)', default='0.25')
 args = parser.parse_args()
 
 def fuzzystr():
-	# initialize empty dataframe
-	df = pd.DataFrame(columns=["seqid", "seq", "trim", "motif", "length", "trimlen", "locus", "fwstart", "fwend", "rvstart", "rvend", "fwdist", "rvdist", "fwmatch_seq", "rvmatch_seq"])
-	record_count = 0
+	# read in fasta file, grab seq record
+	# record_count = 0
 	for record in SeqIO.parse(args.fasta, "fasta"):
 		seqid = record.name 
 		seq = record.seq
 		length = len(record.seq)
-		record_count += 1
+		# record_count += 1
 
-		# print record count to screen every 100 loops
-		if record_count % 100 == 0:
-			print(record_count)
+		# print record count to screen every 100 loops, mostly for debugging
+		# if record_count % 100 == 0:
+		# 	print(record_count)
 
 		# iterate over primer file for each record
 		with open(args.primers, "r") as f:
@@ -86,11 +84,7 @@ def fuzzystr():
 				if trimlen <= 25 or trimlen >= 300:
 					break
 
-			# populate dataframe
-			df = df.append({"seqid": seqid, "seq": seq, "trim": trim, "trimlen": trimlen, "motif": motif, "length": length, "locus": locus, "fwstart": fwstart, "fwend": fwend, "rvstart": rvstart, "rvend": rvend, "fwdist": fwdist, "rvdist": rvdist, "fwmatch_seq": fwseq, "rvmatch_seq": rvseq}, ignore_index=True)
-	# write to file
-	with open(args.output, "w") as output:
-		df.to_csv(output, index=False)
+			print(seqid, "\t", seq, "\t", trim, "\t", trimlen, "\t", motif, "\t", length, "\t", locus, "\t", fwstart, "\t", fwend, "\t", rvstart, "\t", rvend, "\t", fwdist, "\t", rvdist, "\t", fwseq, "\t", rvseq)
 
 def main():
 	assert os.path.exists(args.fasta), 'Error! File does not exist: %s. Is the path correct?' % args.fasta
