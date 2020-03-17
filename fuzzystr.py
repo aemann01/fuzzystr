@@ -76,11 +76,16 @@ def fuzzystr():
 					trim = seq[fwstart:rvend]
 				trimlen = len(trim)
 					
-				#check if motif is found at least once in the sequence
+				# check if motif is found at least once in the sequence
 				ed3 = round(len(motif)*float(args.edit))
 				motif_check = find_near_matches(motif, trim, max_l_dist=ed3)
 				if motif_check == 0:
 					break
+
+				# check if trimmed sequence is within the fragment length range
+				if trimlen <= 25 or trimlen >= 300:
+					break
+
 			# populate dataframe
 			df = df.append({"seqid": seqid, "seq": seq, "trim": trim, "trimlen": trimlen, "motif": motif, "length": length, "locus": locus, "fwstart": fwstart, "fwend": fwend, "rvstart": rvstart, "rvend": rvend, "fwdist": fwdist, "rvdist": rvdist, "fwmatch_seq": fwseq, "rvmatch_seq": rvseq}, ignore_index=True)
 	# write to file
