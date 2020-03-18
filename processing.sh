@@ -31,10 +31,35 @@ bedtools bamtobed -i NISTB1.qualfilt.bam > NISTB1.qualfilt.bed
 awk -F"\t" '{print $4}' NISTB1.qualfilt.bed | sort | uniq > qualfilt.ids
 seqtk subseq NISTB1.reorient.fa qualfilt.ids > NISTB1.reorient.qualfilt.fa
 
+# split fasta file into smaller chunks
+python3 fasta_chunk.py NISTB1.reorient.qualfilt.fa 10000
+
 # now can run fuzzy str to get predicted locus information and trimmed sequences
-python3 fuzzystr.py -f NISTB1.reorient.qualfilt.fa -o NISTB1.reorient.qualfilt.predict -p 150-300bp_amps_powerseq/Powerseq.config -e 0.25
+ls group_*fasta | sed 's/.fasta//' | parallel 'python3 fuzzystr.py -f {}.fasta -p 150-300bp_amps_powerseq/Powerseq.config -e 0.25 > {}.out'
+
+
+
+
+
+
+
+
+
+
+# cat together get rid of intermediate files
+cat *out > NISTB1.reorient.qualfilt.predictions
+rm *out
+rm group*
+
+# pull reads that have only one hit, separate out those with more than one
+awk '{print $1}' NISTB1.reorient.qualfilt.predictions | sort | uniq -c | grep "1 " > hit_once.txt
+awk '{print $1}' NISTB1.reorient.qualfilt.predictions | sort | uniq -c | grep -v "1 " > hit_morethanonce.txt
+
+# how many reads per locus?
+
 
 # split reads by predicted locus
+
 
 # map each batch to the reference dataset
 

@@ -44,9 +44,9 @@ def fuzzystr():
 				fwmatch = find_near_matches(fwprimer, seq, max_l_dist=ed1)
 				rvmatch = find_near_matches(rvprimer, seq, max_l_dist=ed2)
 
-				# break if either forward or reverse match are not found
+				# continue with next locus if either forward or reverse match are not found
 				if len(fwmatch) == 0 or len(rvmatch) == 0:
-					break
+					continue
 				# for both forward and reverse, pick index of lowest edit distance match
 				else:
 					fwindex = []
@@ -67,24 +67,23 @@ def fuzzystr():
 
 				# break if reverse is downstream to forward primer
 				if rvend < fwstart:
-					break
+					continue
 				# trim region
 				else:
 					rvend += 1
 					trim = seq[fwstart:rvend]
-				trimlen = len(trim)
-					
+					trimlen = len(trim)
+
 				# check if motif is found at least once in the sequence
 				ed3 = round(len(motif)*float(args.edit))
 				motif_check = find_near_matches(motif, trim, max_l_dist=ed3)
 				if motif_check == 0:
-					break
+					continue
 
 				# check if trimmed sequence is within the fragment length range
 				if trimlen <= 25 or trimlen >= 300:
-					break
-
-			print(seqid, "\t", seq, "\t", trim, "\t", trimlen, "\t", motif, "\t", length, "\t", locus, "\t", fwstart, "\t", fwend, "\t", rvstart, "\t", rvend, "\t", fwdist, "\t", rvdist, "\t", fwseq, "\t", rvseq)
+					continue
+				print(seqid, "\t", trim, "\t", length, "\t", trimlen, "\t", motif, "\t", locus, "\t", fwstart, "\t", fwend, "\t", rvstart, "\t", rvend, "\t", fwdist, "\t", rvdist, "\t", fwseq, "\t", rvseq)
 
 def main():
 	assert os.path.exists(args.fasta), 'Error! File does not exist: %s. Is the path correct?' % args.fasta
