@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+ #!/usr/bin/env python3
 
 '''
 Fuzzy match primer protocol for STR project. Use: python3 fuzzystr.py -f input.fasta -p primerFile.txt > output.txt
