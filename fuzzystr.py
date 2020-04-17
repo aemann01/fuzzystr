@@ -81,7 +81,7 @@ def fuzzystr():
 					continue
 
 				# check if trimmed sequence is within the fragment length range
-				if trimlen <= 25 or trimlen >= 300:
+				if trimlen <= 20 or trimlen >= 300:
 					continue
 				print(seqid, "\t", trim, "\t", length, "\t", trimlen, "\t", motif, "\t", locus, "\t", fwstart, "\t", fwend, "\t", rvstart, "\t", rvend, "\t", fwdist, "\t", rvdist, "\t", fwseq, "\t", rvseq)
 

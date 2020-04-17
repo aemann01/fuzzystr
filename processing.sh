@@ -105,7 +105,7 @@ cd split_files
 rename 's/>//' *fa
 
 # modify seq names so that they are uniqu
-ls *fa | while read line; do sed -i s'/ /-/' $line; done
+ls *fa | while read line; do sed -i s'/ /:/' $line; done
 
 # dereplicate sequences
 ls *fa | while read line; do sed -i 's/--//' $line; done
@@ -118,7 +118,7 @@ ls *uniq.fa | sed 's/.uniq.fa//' | while read line; do vsearch --sortbylength $l
 ls *sort.fa | sed 's/.sort.fa//' | while read line; do vsearch --cluster_size $line.sort.fa --id 0.98 --sizein --sizeout --centroids $line.98.fa; done
 
 # alignment
-ls *98.fa | sed 's/.98.fa//' | parallel 'mafft {}.98.fa > {}.align.fa' &
+ls *98.fa | sed 's/.98.fa//' | parallel 'mafft {}.98.fa > {}.align.fa' 
 
 # trim sequences and remove spurious alignments
 # right now ignoring amelogenin and y chromosome cause slow
@@ -126,8 +126,7 @@ cat temp.ids | parallel -j10 'trimal -in {}.align.fa -out {}.trim.fa -gt 0.5 -st
 
 
 
-
-
+## STOPPED HERE # continued without those three jerk files that won't complete
 
 # remove wordwrap
 ls *trim* | while read line; do bash remove_wordwrap.sh $line > $line.fix; done
@@ -138,13 +137,13 @@ rename  's/.fix//' *fix
 ls *trim* | sed 's/.trim.fa//' | while read line; do sed 's/-//g' $line.trim.fa > $line.nogap.fa; done
 
 # sort by size
-ls *nogap.fa | sed 's/.nogap.fa//' | while read line; do vsearch --sortbylength $line.nogap.fa --output $line.sort.fa; done
+ls *nogap.fa | sed 's/.nogap.fa//' | while read line; do vsearch --sortbylength $line.nogap.fa --output $line.sorta.fa; done
 
 # re cluster at 98%
-ls *sort.fa | sed 's/.sort.fa//' | while read line; do vsearch --cluster_size $line.sort.fa --id 0.98 --sizein --sizeout --centroids $line.98a.fa --minseqlength 25; done
+ls *sorta.fa | sed 's/.sorta.fa//' | while read line; do vsearch --cluster_size $line.sorta.fa --id 0.98 --sizein --sizeout --centroids $line.98a.fa --minseqlength 25; done
 
 # derep again
-ls *98a.fa | sed 's/.98.fa//' | while read line; do vsearch --derep_fulllength $line.98a.fa --output $line.uniq2.fa --sizeout --sizein --minseqlength 25; done
+ls *98a.fa | sed 's/.98a.fa//' | while read line; do vsearch --derep_fulllength $line.98a.fa --output $line.uniq2.fa --sizeout --sizein --minseqlength 25; done
 
 # sort by abundance
 ls *uniq2.fa | sed 's/.uniq2.fa//' | while read line; do vsearch --sortbysize $line.uniq2.fa --output $line.final.fa; done
@@ -154,6 +153,13 @@ ls *final* | sed 's/.final.fa//' | while read line; do bash remove_wordwrap.sh $
 rm *final.fa
 rename 's/.final.fix/.final.fa/' *fix
 
+# re add uniq sequence identifiers
+ls *final* | while read line; do bash seq_numbers.sh $line > $line.fix; done
+rm *final.fa
+rename 's/.final.fix/.final.fa/' *fix
+
+# find motifs
+ls *final* | sed 's/.final.fa//' | while read line; do python find_motifs.py -f $line.final.fa > motifs/$line.motifs.txt; done
 
 
 
