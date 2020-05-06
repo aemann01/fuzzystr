@@ -90,7 +90,7 @@ awk -F"\t" '{print $6}' NISTB1.reorient.qualfilt.predictions | sort | uniq -c
  #    402  PENTAD
  #  16656  PENTAE
  #   1034  TH01
- #   6177  TPOX # with at least 8 repeats: 1940, 640 of which are 11 repeats
+ #   6177  TPOX # with at least 8 repeats: 1300, 640 11 repeats
  #  17319  vWA
  # 104050  Y-GATA-H4
 
@@ -100,6 +100,7 @@ sed 's/_/ /' NISTB1.trimmed.fa > temp
 mv temp NISTB1.trimmed.fa
 
 # split reads by predicted locus
+mkdir split_files
 cat query.ids | while read line; do grep -w $line NISTB1.trimmed.fa -A 1 > split_files/$line.fa; done
 cd split_files
 rename 's/>//' *fa
@@ -107,59 +108,163 @@ rename 's/>//' *fa
 # modify seq names so that they are uniqu
 ls *fa | while read line; do sed -i s'/ /:/' $line; done
 
-# dereplicate sequences
-ls *fa | while read line; do sed -i 's/--//' $line; done
-ls *fa | sed 's/.fa//' | parallel -j10 'vsearch --derep_fulllength {}.fa --output {}.uniq.fa --sizeout --minseqlength 25'
+# now trim by flanking regions
+# only doing those loci that are in the supp table
+# got to be a better way to do this, iterate through files etc
+mkdir flanktrim
+python ../scripts/flanktrim.py -f D1S1656.fa -fw GAACCAAATA \
+	-rv GCAACACAGG -e 0.1 > flanktrim/D1S1656.trim &
+python ../scripts/flanktrim.py -f D13S317.fa -fw ACAAATACAT \
+	-rv ATCATCTAT -e 0.1 > flanktrim/D13S317.trim &
+python ../scripts/flanktrim.py -f PENTAE.fa -fw CTTACAATTT \
+	-rv GAGACTGAGTCT -e 0.1 > flanktrim/PENTAE.trim &
+python ../scripts/flanktrim.py -f TPOX.fa -fw CACTGAATGA \
+	-rv AATGTTTGG -e 0.1 > flanktrim/TPOX.trim &
+python ../scripts/flanktrim.py -f D2S441.fa -fw TATGAAAACT \
+	-rv TATCATAACA -e 0.1 > flanktrim/D2S441.trim &
+python ../scripts/flanktrim.py -f D2S1338.fa -fw GAAGGAAGGA \
+	-rv AGGCCAAGCC -e 0.1 > flanktrim/D2S1338.trim &
+python ../scripts/flanktrim.py -f D3S1358.fa -fw CTTGCATGTA \
+	-rv TGAGACAGGG -e 0.1 > flanktrim/D3S1358.trim &
+python ../scripts/flanktrim.py -f FGA.fa -fw AAGGAAGAAA \
+	-rv CTAGCTTGTA -e 0.1 > flanktrim/FGA.trim &
+python ../scripts/flanktrim.py -f D5S818.fa -fw TTATACCTCT \
+	-rv TCAAAAT -e 0.1 > flanktrim/D5S818.trim &
+python ../scripts/flanktrim.py -f CSF1PO.fa -fw ATCTATCTAT \
+	-rv AATCTATCTA -e 0.1 > flanktrim/CSF1PO.trim &
+python ../scripts/flanktrim.py -f D7S820.fa -fw TCAATCTGTC \
+	-rv GTTAGTTCGT -e 0.1 > flanktrim/D7S820.trim &
+python ../scripts/flanktrim.py -f D10S1248.fa -fw ATGAGTGAGT \
+	-rv ATGAAGACAA -e 0.1 > flanktrim/D10S1248.trim &
+python ../scripts/flanktrim.py -f TH01.fa -fw CTCCATGGTG \
+	-rv AGGGAAATAA -e 0.1 > flanktrim/TH01.trim &
+python ../scripts/flanktrim.py -f vWA.fa -fw GATAGATGGA \
+	-rv TCAAT -e 0.1 > flanktrim/vWA.trim &
+python ../scripts/flanktrim.py -f D12S391.fa -fw ATGCATAGGT \
+	-rv GAGAGGGGAT -e 0.1 > flanktrim/D12S391.trim &
+python ../scripts/flanktrim.py -f D16S539.fa -fw CAGACAGGTG \
+	-rv TCATTGAAAG -e 0.1 > flanktrim/D16S539.trim &
+python ../scripts/flanktrim.py -f D18S51.fa -fw GTCTCAGAAA \
+	-rv AAAGAGAGAG -e 0.1 > flanktrim/D18S51.trim &
+python ../scripts/flanktrim.py -f D19S433.fa -fw CTTCCTCTCT \
+	-rv CAACAGAATC -e 0.1 > flanktrim/D19S433.trim &
+python ../scripts/flanktrim.py -f D21S11.fa -fw TGAATTGCCT \
+	-rv TCGTCTATCT -e 0.1 > flanktrim/D21S11.trim &
+python ../scripts/flanktrim.py -f PENTAD.fa -fw ACCATCTCTC \
+	-rv AAAAACGAA -e 0.1 > flanktrim/PENTAD.trim &
+python ../scripts/flanktrim.py -f D22S1045.fa -fw TAGTAGTCTC \
+	-rv GTTATAAAAA -e 0.25 > flanktrim/D22S1045.trim &
+python ../scripts/flanktrim.py -f D8S1179.fa -fw GATCTATCTA \
+	-rv TTCCC -e 0.1 > flanktrim/D8S1179.trim &
+
+# get fasta for each trimmed file
+cd flanktrim
+ls *trim | while read line; do awk -F"\t" '{print ">" $1 "\n" $2}' $line > $line.fa; done
 
 # sort by length
-ls *uniq.fa | sed 's/.uniq.fa//' | while read line; do vsearch --sortbylength $line.uniq.fa --output $line.sort.fa; done
+ls *.fa | sed 's/.trim.fa//' | while read line; do vsearch --sortbylength $line.trim.fa --output $line.sort.fa; done
 
-# cluster at 98% identity
-ls *sort.fa | sed 's/.sort.fa//' | while read line; do vsearch --cluster_size $line.sort.fa --id 0.98 --sizein --sizeout --centroids $line.98.fa; done
+# dereplication
+ls *sort.fa | sed 's/.sort.fa//' | while read line; do vsearch --derep_fulllength $line.sort.fa --output $line.derep.fa --sizeout --minseqlength 10; done
 
-# alignment
-ls *98.fa | sed 's/.98.fa//' | parallel 'mafft {}.98.fa > {}.align.fa' 
+# cluster at 99% identity
+ls *derep.fa | sed 's/.derep.fa//' | parallel 'vsearch --cluster_smallmem {}.derep.fa --id 0.99 --centroids {}.cluster.fa --clusterout_sort --consout {}.cons.fa --relabel_keep --sizein --sizeout --uc {}.uc --usersort'
 
-# trim sequences and remove spurious alignments
-# right now ignoring amelogenin and y chromosome cause slow
-cat temp.ids | parallel -j10 'trimal -in {}.align.fa -out {}.trim.fa -gt 0.5 -st 0.001 -resoverlap 0.75 -seqoverlap 80'&
+# map to reference sequences
+# bowtie2-build ref_seqs.fa ref_seqs
+ls *cons* | sed 's/.fa//' | while read line; do bowtie2 --no-unal -x ~/mann/NISTB1_alignment/ref_seqs -U $line.fa -f --end-to-end -S $line.sam; done
 
+# also try to use blast to find best guessed match
+cat *cons.fa > cleaned.str.fa
+blastn -outfmt '6 qseqid sseqid qlen slen qstart qend sstart send evalue length pident gaps btop' \
+	-db ~/mann/NISTB1_alignment/ref_seqs.db \
+	-query cleaned.str.fa \
+	-out blast.out \
+	-evalue 1e-10 \
+	-perc_identity 0.90 \
+	-gapopen 1 \
+	-gapextend 1 \
+	-max_target_seqs 1 &
 
+# also get xml version
+blastn -outfmt 5 \
+	-db ~/mann/NISTB1_alignment/ref_seqs.db \
+	-query cleaned.str.fa \
+	-out blast.out.xml \
+	-evalue 1e-10 \
+	-perc_identity 0.90 \
+	-gapopen 1 \
+	-gapextend 1 \
+	-max_target_seqs 1 &
 
-## STOPPED HERE # continued without those three jerk files that won't complete
+# ok so blast is not great at loci like tpox, need alternative
 
-# remove wordwrap
-ls *trim* | while read line; do bash remove_wordwrap.sh $line > $line.fix; done
-rm *trim.fa
-rename  's/.fix//' *fix
+# get predicted motif counts
+# each file visually examined to determine number of max allowed mismatches
+# check for each motif IF it repeats, can narrow down later
+mkdir motifs
+## CSF1P0
+Rscript ../../scripts/motif_count.R CSF1PO.cons.fa "ATCT" 0 CSF1P0.motifs
+## D10S1248
+Rscript ../../scripts/motif_count.R D10S1248.cons.fa "GGAA" 0 D10S1248.motifs
+## D12S391
+Rscript ../../scripts/motif_count.R D12S391.cons.fa "AGAT" 0 D12S391.motifs_1
+Rscript ../../scripts/motif_count.R D12S391.cons.fa "AGAC" 0 D12S391.motifs_2
+paste D12S391.motifs_1 D12S391.motifs_2 > D12S391.motifs
+## D13S317
+Rscript ../../scripts/motif_count.R D13S317.cons.fa "TATC" 0 D13S317.motifs
+## D16S539
+Rscript ../../scripts/motif_count.R D16S539.cons.fa "GATA" 0 D16S539.motifs
+## D18S51
+Rscript ../../scripts/motif_count.R D18S51.cons.fa "AGAA" 0 D18S51.motifs
+## D19S433
+Rscript ../../scripts/motif_count.R D19S433.cons.fa "CCTT" 1 D19S433.motifs
+## D1S1656
+Rscript ../../scripts/motif_count.R D1S1656.cons.fa "TCTA" 0 D1S1656.motifs
+## D21S11
+Rscript ../../scripts/motif_count.R D21S11.cons.fa "TCTA" 0 D21S11.motifs_1
+Rscript ../../scripts/motif_count.R D21S11.cons.fa "TCTG" 0 D21S11.motifs_2
+paste D21S11.motifs_1 D21S11.motifs_2 > D21S11.motifs
+## D22S1045
+Rscript ../../scripts/motif_count.R D22S1045.cons.fa "ATT" 0 D22S1045.motifs
+## D2S1338
+Rscript ../../scripts/motif_count.R D2S1338.cons.fa "GGAA" 0 D2S1338.motifs_1
+Rscript ../../scripts/motif_count.R D2S1338.cons.fa "GGCA" 0 D2S1338.motifs_2
+paste D2S1338.motifs_1 D2S1338.motifs_2 > D2S1338.motifs
+## D2S441
+Rscript ../../scripts/motif_count.R D2S441.cons.fa "TCTA" 0 D2S441.motifs
+## D3S1358
+Rscript ../../scripts/motif_count.R D3S1358.cons.fa "TCTG" 0 D3S1358.motifs_1
+Rscript ../../scripts/motif_count.R D3S1358.cons.fa "TCTA" 0 D3S1358.motifs_2
+paste D3S1358.motifs_1 D3S1358.motifs_2 > D3S1358.motifs
+## D5S818
+Rscript ../../scripts/motif_count.R D5S818.cons.fa "ATCT" 0 D5S818.motifs
+## D7S820
+Rscript ../../scripts/motif_count.R D7S820.cons.fa "TATC" 0 D7S820.motifs
+## D8S1179
+Rscript ../../scripts/motif_count.R D8S1179.cons.fa "TCTA" 0 D8S1179.motifs_1
+Rscript ../../scripts/motif_count.R D8S1179.cons.fa "TCTG" 0 D8S1179.motifs_2
+paste D8S1179.motifs_1 D8S1179.motifs_2 > D8S1179.motifs
+## FGA
+Rscript ../../scripts/motif_count.R FGA.cons.fa "GGAA" 0 FGA.motifs_1
+Rscript ../../scripts/motif_count.R FGA.cons.fa "AAAG" 0 FGA.motifs_2
+Rscript ../../scripts/motif_count.R FGA.cons.fa "GAAA" 0 FGA.motifs_3
+Rscript ../../scripts/motif_count.R FGA.cons.fa "GAAG" 0 FGA.motifs_4
+paste FGA.motifs_1 FGA.motifs_2 FGA.motifs_3 FGA.motifs_4 > FGA.motifs
+## PENTAD
+Rscript ../../scripts/motif_count.R PENTAD.cons.fa "AAAGA" 0 PENTAD.motifs
+## PENTAE
+Rscript ../../scripts/motif_count.R PENTAE.cons.fa "TCTTT" 0 PENTAE.motifs
+## TH01
+Rscript ../../scripts/motif_count.R TH01.cons.fa "AATG" 0 TH01.motifs
+## TPOX
+Rscript ../../scripts/motif_count.R TPOX.cons.fa "AATG" 0 TPOX.motifs
+## vWA
+Rscript ../../scripts/motif_count.R vWA.cons.fa "TAGA" 0 vWA.motifs_1
+Rscript ../../scripts/motif_count.R vWA.cons.fa "CAGA" 0 vWA.motifs_2
+paste vWA.motifs_1 vWA.motifs_2 >vWA.motifs
 
-# remove gaps
-ls *trim* | sed 's/.trim.fa//' | while read line; do sed 's/-//g' $line.trim.fa > $line.nogap.fa; done
-
-# sort by size
-ls *nogap.fa | sed 's/.nogap.fa//' | while read line; do vsearch --sortbylength $line.nogap.fa --output $line.sorta.fa; done
-
-# re cluster at 98%
-ls *sorta.fa | sed 's/.sorta.fa//' | while read line; do vsearch --cluster_size $line.sorta.fa --id 0.98 --sizein --sizeout --centroids $line.98a.fa --minseqlength 25; done
-
-# derep again
-ls *98a.fa | sed 's/.98a.fa//' | while read line; do vsearch --derep_fulllength $line.98a.fa --output $line.uniq2.fa --sizeout --sizein --minseqlength 25; done
-
-# sort by abundance
-ls *uniq2.fa | sed 's/.uniq2.fa//' | while read line; do vsearch --sortbysize $line.uniq2.fa --output $line.final.fa; done
-
-# clean up files
-ls *final* | sed 's/.final.fa//' | while read line; do bash remove_wordwrap.sh $line.final.fa > $line.final.fix; done
-rm *final.fa
-rename 's/.final.fix/.final.fa/' *fix
-
-# re add uniq sequence identifiers
-ls *final* | while read line; do bash seq_numbers.sh $line > $line.fix; done
-rm *final.fa
-rename 's/.final.fix/.final.fa/' *fix
-
-# find motifs
-ls *final* | sed 's/.final.fa//' | while read line; do python find_motifs.py -f $line.final.fa > motifs/$line.motifs.txt; done
+## RERUN FROM FLANK TRIM WHEN DONE
 
 
 
