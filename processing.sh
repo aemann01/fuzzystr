@@ -199,73 +199,151 @@ blastn -outfmt 5 \
 
 # ok so blast is not great at loci like tpox, need alternative
 
+# rereplicate for motif counts
+ls *cons.fa | sed 's/.cons.fa//' | while read line; do vsearch --rereplicate $line.cons.fa --output $line.rerep.fa; done
+
 # get predicted motif counts
 # each file visually examined to determine number of max allowed mismatches
 # check for each motif IF it repeats, can narrow down later
 mkdir motifs
 ## CSF1P0
-Rscript ../../scripts/motif_count.R CSF1PO.cons.fa "ATCT" 0 CSF1P0.motifs
+Rscript ../../scripts/motif_count.R CSF1PO.rerep.fa "ATCT" 0 CSF1P0.motifs
 ## D10S1248
-Rscript ../../scripts/motif_count.R D10S1248.cons.fa "GGAA" 0 D10S1248.motifs
+Rscript ../../scripts/motif_count.R D10S1248.rerep.fa "GGAA" 0 D10S1248.motifs
 ## D12S391
-Rscript ../../scripts/motif_count.R D12S391.cons.fa "AGAT" 0 D12S391.motifs_1
-Rscript ../../scripts/motif_count.R D12S391.cons.fa "AGAC" 0 D12S391.motifs_2
+Rscript ../../scripts/motif_count.R D12S391.rerep.fa "AGAT" 0 D12S391.motifs_1
+Rscript ../../scripts/motif_count.R D12S391.rerep.fa "AGAC" 0 D12S391.motifs_2
 paste D12S391.motifs_1 D12S391.motifs_2 > D12S391.motifs
 ## D13S317
-Rscript ../../scripts/motif_count.R D13S317.cons.fa "TATC" 0 D13S317.motifs
+Rscript ../../scripts/motif_count.R D13S317.rerep.fa "TATC" 0 D13S317.motifs
 ## D16S539
-Rscript ../../scripts/motif_count.R D16S539.cons.fa "GATA" 0 D16S539.motifs
+Rscript ../../scripts/motif_count.R D16S539.rerep.fa "GATA" 0 D16S539.motifs
 ## D18S51
-Rscript ../../scripts/motif_count.R D18S51.cons.fa "AGAA" 0 D18S51.motifs
+Rscript ../../scripts/motif_count.R D18S51.rerep.fa "AGAA" 0 D18S51.motifs
 ## D19S433
-Rscript ../../scripts/motif_count.R D19S433.cons.fa "CCTT" 1 D19S433.motifs
+Rscript ../../scripts/motif_count.R D19S433.rerep.fa "CCTT" 1 D19S433.motifs
 ## D1S1656
-Rscript ../../scripts/motif_count.R D1S1656.cons.fa "TCTA" 0 D1S1656.motifs
+Rscript ../../scripts/motif_count.R D1S1656.rerep.fa "TCTA" 0 D1S1656.motifs
 ## D21S11
-Rscript ../../scripts/motif_count.R D21S11.cons.fa "TCTA" 0 D21S11.motifs_1
-Rscript ../../scripts/motif_count.R D21S11.cons.fa "TCTG" 0 D21S11.motifs_2
+Rscript ../../scripts/motif_count.R D21S11.rerep.fa "TCTA" 0 D21S11.motifs_1
+Rscript ../../scripts/motif_count.R D21S11.rerep.fa "TCTG" 0 D21S11.motifs_2
 paste D21S11.motifs_1 D21S11.motifs_2 > D21S11.motifs
 ## D22S1045
-Rscript ../../scripts/motif_count.R D22S1045.cons.fa "ATT" 0 D22S1045.motifs
+Rscript ../../scripts/motif_count.R D22S1045.rerep.fa "ATT" 0 D22S1045.motifs
 ## D2S1338
-Rscript ../../scripts/motif_count.R D2S1338.cons.fa "GGAA" 0 D2S1338.motifs_1
-Rscript ../../scripts/motif_count.R D2S1338.cons.fa "GGCA" 0 D2S1338.motifs_2
+Rscript ../../scripts/motif_count.R D2S1338.rerep.fa "GGAA" 0 D2S1338.motifs_1
+Rscript ../../scripts/motif_count.R D2S1338.rerep.fa "GGCA" 0 D2S1338.motifs_2
 paste D2S1338.motifs_1 D2S1338.motifs_2 > D2S1338.motifs
 ## D2S441
-Rscript ../../scripts/motif_count.R D2S441.cons.fa "TCTA" 0 D2S441.motifs
+Rscript ../../scripts/motif_count.R D2S441.rerep.fa "TCTA" 0 D2S441.motifs
 ## D3S1358
-Rscript ../../scripts/motif_count.R D3S1358.cons.fa "TCTG" 0 D3S1358.motifs_1
-Rscript ../../scripts/motif_count.R D3S1358.cons.fa "TCTA" 0 D3S1358.motifs_2
+Rscript ../../scripts/motif_count.R D3S1358.rerep.fa "TCTG" 0 D3S1358.motifs_1
+Rscript ../../scripts/motif_count.R D3S1358.rerep.fa "TCTA" 0 D3S1358.motifs_2
 paste D3S1358.motifs_1 D3S1358.motifs_2 > D3S1358.motifs
 ## D5S818
-Rscript ../../scripts/motif_count.R D5S818.cons.fa "ATCT" 0 D5S818.motifs
+Rscript ../../scripts/motif_count.R D5S818.rerep.fa "ATCT" 0 D5S818.motifs
 ## D7S820
-Rscript ../../scripts/motif_count.R D7S820.cons.fa "TATC" 0 D7S820.motifs
+Rscript ../../scripts/motif_count.R D7S820.rerep.fa "TATC" 0 D7S820.motifs
 ## D8S1179
-Rscript ../../scripts/motif_count.R D8S1179.cons.fa "TCTA" 0 D8S1179.motifs_1
-Rscript ../../scripts/motif_count.R D8S1179.cons.fa "TCTG" 0 D8S1179.motifs_2
+Rscript ../../scripts/motif_count.R D8S1179.rerep.fa "TCTA" 0 D8S1179.motifs_1
+Rscript ../../scripts/motif_count.R D8S1179.rerep.fa "TCTG" 0 D8S1179.motifs_2
 paste D8S1179.motifs_1 D8S1179.motifs_2 > D8S1179.motifs
 ## FGA
-Rscript ../../scripts/motif_count.R FGA.cons.fa "GGAA" 0 FGA.motifs_1
-Rscript ../../scripts/motif_count.R FGA.cons.fa "AAAG" 0 FGA.motifs_2
-Rscript ../../scripts/motif_count.R FGA.cons.fa "GAAA" 0 FGA.motifs_3
-Rscript ../../scripts/motif_count.R FGA.cons.fa "GAAG" 0 FGA.motifs_4
+Rscript ../../scripts/motif_count.R FGA.rerep.fa "GGAA" 0 FGA.motifs_1
+Rscript ../../scripts/motif_count.R FGA.rerep.fa "AAAG" 0 FGA.motifs_2
+Rscript ../../scripts/motif_count.R FGA.rerep.fa "GAAA" 0 FGA.motifs_3
+Rscript ../../scripts/motif_count.R FGA.rerep.fa "GAAG" 0 FGA.motifs_4
 paste FGA.motifs_1 FGA.motifs_2 FGA.motifs_3 FGA.motifs_4 > FGA.motifs
 ## PENTAD
-Rscript ../../scripts/motif_count.R PENTAD.cons.fa "AAAGA" 0 PENTAD.motifs
+Rscript ../../scripts/motif_count.R PENTAD.rerep.fa "AAAGA" 0 PENTAD.motifs
 ## PENTAE
-Rscript ../../scripts/motif_count.R PENTAE.cons.fa "TCTTT" 0 PENTAE.motifs
+Rscript ../../scripts/motif_count.R PENTAE.rerep.fa "TCTTT" 0 PENTAE.motifs
 ## TH01
-Rscript ../../scripts/motif_count.R TH01.cons.fa "AATG" 0 TH01.motifs
+Rscript ../../scripts/motif_count.R TH01.rerep.fa "AATG" 0 TH01.motifs
 ## TPOX
-Rscript ../../scripts/motif_count.R TPOX.cons.fa "AATG" 0 TPOX.motifs
+Rscript ../../scripts/motif_count.R TPOX.rerep.fa "AATG" 0 TPOX.motifs
 ## vWA
-Rscript ../../scripts/motif_count.R vWA.cons.fa "TAGA" 0 vWA.motifs_1
-Rscript ../../scripts/motif_count.R vWA.cons.fa "CAGA" 0 vWA.motifs_2
+Rscript ../../scripts/motif_count.R vWA.rerep.fa "TAGA" 0 vWA.motifs_1
+Rscript ../../scripts/motif_count.R vWA.rerep.fa "CAGA" 0 vWA.motifs_2
 paste vWA.motifs_1 vWA.motifs_2 >vWA.motifs
+# clean up
+rm *_*
 
-## RERUN FROM FLANK TRIM WHEN DONE
+#######################################
+# New test, STRique
+#######################################
+# activate environment
+cd /home/administrator/STRique
+source bin/activate
+# 1 indexing
+python3 ~/src/STRique/scripts/STRique.py index \
+	~/mann/15cycle_NISTB/ \
+	> ~/mann/NISTB1_alignment/strique/reads.fofn
+
+# bam to sam
+# samtools view -h -o ~/mann/NISTB1_alignment/NISTB1_ps109_75ng_051419.sam \
+# 	~/mann/NISTB1_alignment/NISTB1_ps109_75ng_051419.bam
+
+# filter out unmapped reads
+samtools view -F 4 ~/mann/15cycle_NISTB/15cycle_NISTB_hacbasecall/15cycle_NISTB.sam \
+	> ~/mann/15cycle_NISTB/15cycle_NISTB_hacbasecall/15cycle_NISTB.mapped.sam
+
+# repeat counting 150 bp flank
+cat ~/mann/15cycle_NISTB/15cycle_NISTB_hacbasecall/15cycle_NISTB.mapped.sam | \
+	python3 ~/src/STRique/scripts/STRique.py count \
+	~/mann/NISTB1_alignment/strique/reads.fofn \
+	~/src/STRique/models/r9_4_450bps.model \
+	~/src/STRique/configs/strique_config_150bp.txt \
+	> ~/mann/NISTB1_alignment/strique/results.tsv
+
+# repeat counting 75 bp flank
+cat ~/mann/15cycle_NISTB/15cycle_NISTB_hacbasecall/15cycle_NISTB.mapped.sam | \
+	python3 ~/src/STRique/scripts/STRique.py count \
+	~/mann/NISTB1_alignment/strique/reads.fofn \
+	~/src/STRique/models/r9_4_450bps.model \
+	~/src/STRique/configs/strique_config_75bp.txt \
+	> ~/mann/NISTB1_alignment/strique/results_75bp.tsv
+
+# repeat counting 50 bp flank
+cat ~/mann/15cycle_NISTB/15cycle_NISTB_hacbasecall/15cycle_NISTB.mapped.sam | \
+	python3 ~/src/STRique/scripts/STRique.py count \
+	~/mann/NISTB1_alignment/strique/reads.fofn \
+	~/src/STRique/models/r9_4_450bps.model \
+	~/src/STRique/configs/strique_config_50bp.txt \
+	> ~/mann/NISTB1_alignment/strique/results_50bp.tsv
+
+# repeat counting 25 bp flank
+cat ~/mann/15cycle_NISTB/15cycle_NISTB_hacbasecall/15cycle_NISTB.mapped.sam | \
+	python3 ~/src/STRique/scripts/STRique.py count \
+	~/mann/NISTB1_alignment/strique/reads.fofn \
+	~/src/STRique/models/r9_4_450bps.model \
+	~/src/STRique/configs/strique_config_25bp.txt \
+	> ~/mann/NISTB1_alignment/strique/results_25bp.tsv
+
+# first need to filter out any reads with repeat count of zero
+ls results* | while read line; 
+	do awk -F"\t" '$4>0' $line > $line.filt; done
+
+# sanity check
+awk -F"\t" '{print $4}' *filt | sort | uniq -c
+
+# round up prefix and suffix score
+ls *filt | while read line; 
+	do awk -F"\t" '{printf "%.1f\t%.1f\n", $5, $6}' $line > $line.round; done
+ls *round | while read line; 
+	do sed -i '1 s/^.*$/score_prefix_round\tscore_suffix_round/' $line; done
+ls *filt | sed 's/.filt//' | while read line; 
+	do paste $line.filt $line.filt.round > $line.paste; done
+
+# next filter by prefix and suffix score (being a little lax here, in pub 4.0 is threshold)
+ls *paste | sed 's/.paste//' | while read line; 
+	do awk -F"\t" '$11>=3.5 && $12>=3.5' $line.paste > $line.final; done
+
+# format data for plot generation
+
+# plot generation
 
 
 
+# pull reads from peaks 
 
