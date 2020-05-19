@@ -1,1 +1,1 @@
-# fuzzystr
+# Nanopore STR Project
