@@ -52,7 +52,7 @@ def flanktrim():
 			continue
 		# trim region
 		else:
-			trim = seq[fwstart:rvend]
+			trim = seq[fwend:rvstart]
 			trimlen = len(trim)
 
 		# check if trimmed sequence is within the fragment length range

@@ -339,11 +339,115 @@ ls *filt | sed 's/.filt//' | while read line;
 ls *paste | sed 's/.paste//' | while read line; 
 	do awk -F"\t" '$11>=3.5 && $12>=3.5' $line.paste > $line.final; done
 
-# format data for plot generation
+# pass to hist generation r file
 
-# plot generation
+# Why so many reads with 3 repeats?
+# first pull read IDs
+grep "TPOX" results_25bp.tsv.final | awk -F"\t" '$4==3' | awk '{print $1}' > tpox_3rep_25bp.ids
+# actually not that many only 45 reads total?
+
+# filter from fastq
+seqtk subseq ~/mann/15cycle_NISTB/15cycle_NISTB_hacbasecall/15cycle_NISTB.fastq tpox_3rep_25bp.ids > tpox_3rep_25bp.fq
+
+# fastq to fasta
+sed -n '1~4s/^@/>/p;2~4p' tpox_3rep_25bp.fq > tpox_3rep_25bp.fa
+
+# align sequences
+mafft tpox_3rep_25bp.fa > tpox_3rep_25bp.align.fa
+
+# only 145 reads were filtered from tpox (25bp)
+# 45 are 3 reps
+# 20 are 8 etc...
+
+# what about before all of the filtering
+# re run strique
+cd /home/administrator/STRique
+source bin/activate
+cd ~/mann/NISTB1_alignment/strique/test/
+
+cat ~/mann/15cycle_NISTB/15cycle_NISTB_hacbasecall/15cycle_NISTB.mapped.sam | \
+	python3 ~/src/STRique/scripts/STRique.py count \
+	~/mann/NISTB1_alignment/strique/reads.fofn \
+	~/src/STRique/models/r9_4_450bps.model \
+	~/src/STRique/configs/strique_config_25bp.txt \
+	> ~/mann/NISTB1_alignment/strique/test/results_25bp.tsv
+
+# trying to correct nanopore error
+# first need to download locally, need to update ubuntu on lab computer to run
+scp administrator@10.53.1.235:/home/administrator/mann/NISTB1_alignment/split_files/*fa .
+cat *fa > all.fa
+lorma.sh all.fa
+
+# dereplicate these
+vsearch --derep_fulllength final.fasta --output final.derep.fa --sizeout --minseqlen 100
+
+# what if we bin these by length? Uncorrected ones lormah makes it worse
+# read length statistics for each locus
+ls *.sort.fa | sed 's/.sort.fa//' | while read line; do ~/bbmap/readlength.sh in=$line.sort.fa out=$line.sum.txt bin=4; done
+
+###################
+# LENGTH BINNING
+###################
+# first need to get rid of reads in the flank trimmed data that fall above or below the min max Courtney sent
+ls *.derep.fa | sed 's/.derep.fa//' | while read line; do python ~/github/NISTB/scripts/fasta_len.py $line.derep.fa > $line.len; done
+
+# get summary statistics for each (median +- 1stdev)
+# pull reads +- 4bp around median
+# CSF1P0 24 19 29
+awk '$2 >= 19 && $2 <= 29' CSF1PO.len | awk '{print $1}' > CSF1PO.filt.ids
+# D10S1248 52 47 57
+awk '$2 >= 47 && $2 <= 57' D10S1248.len | awk '{print $1}' > D10S1248.filt.ids
+# D12S391 92 79 105
+awk '$2 >= 79 && $2 <= 105' D12S391.len | awk '{print $1}' > D12S391.filt.ids
+# D13S317 44 35 53
+awk '$2 >= 35 && $2 <= 53' D13S317.len | awk '{print $1}' > D13S317.filt.ids
+# D16S539 48 41 55
+awk '$2 >= 24 && $2 <= 32' D16S539.len | awk '{print $1}' > D16S539.filt.ids
+# D18S51 48 39 57
+awk '$2 >= 39 && $2 <= 57' D18S51.len | awk '{print $1}' > D18S51.filt.ids
+# D19S433 76 66 86
+awk '$2 >= 66 && $2 <= 86' D19S433.len | awk '{print $1}' > D19S433.filt.ids
+# D1S1656 104 95 113
+awk '$2 >= 95 && $2 <= 113' D1S1656.len | awk '{print $1}' > D1S1656.filt.ids
+# D21S11 128 77 179
+awk '$2 >= 77 && $2 <= 179' D21S11.len | awk '{print $1}' > D21S11.filt.ids
+# D22S1045 48 44 53
+awk '$2 >= 44 && $2 <= 53' D22S1045.len | awk '{print $1}' > D22S1045.filt.ids
+# D2S1338 40 29 51
+awk '$2 >= 29 && $2 <= 51' D2S1338.len | awk '{print $1}' > D2S1338.filt.ids
+# D2S441 52 43 61
+awk '$2 >= 43 && $2 <= 61' D2S441.len | awk '{print $1}' > D2S441.filt.ids
+# D3S1358 72 63 81
+awk '$2 >= 63 && $2 <= 81' D3S1358.len | awk '{print $1}' > D3S1358.filt.ids
+# D5S818 48 38 58
+awk '$2 >= 38 && $2 <= 58' D5S818.len | awk '{print $1}' > D5S818.filt.ids
+# D7S820 40 37 43
+awk '$2 >= 37 && $2 <= 43' D7S820.len | awk '{print $1}' > D7S820.filt.ids
+# D8S1179 32 24 40
+awk '$2 >= 24 && $2 <= 40' D8S1179.len | awk '{print $1}' > D8S1179.filt.ids
+# FGA 72 60 85
+awk '$2 >= 60 && $2 <= 85' FGA.len | awk '{print $1}' > FGA.filt.ids
+# PENTAD 52 47 57
+awk '$2 >= 47 && $2 <= 57' PENTAD.len | awk '{print $1}' > PENTAD.filt.ids
+# PENTAE 72 51 93
+awk '$2 >= 51 && $2 <= 93' PENTAE.len | awk '{print $1}' > PENTAE.filt.ids
+# TH01 36 28 44
+awk '$2 >= 28 && $2 <= 44' TH01.len | awk '{print $1}' > TH01.filt.ids
+# TPOX 28 21 35
+awk '$2 >= 21 && $2 <= 35' TPOX.len | awk '{print $1}' > TPOX.filt.ids
+# vWA 68 52 84
+awk '$2 >= 52 && $2 <= 84' vWA.len | awk '{print $1}' > vWA.filt.ids
+
+# filter binned reads from sequences
+ls *ids | sed 's/.filt.ids//' | while read line; do seqtk subseq $line.sort.fa $line.filt.ids > $line.bin.fa; done
+
+# dereplicate again and sort by abundance
+ls *bin.fa | sed 's/.bin.fa//' | while read line; do vsearch --derep_fulllength $line.bin.fa --output $line.bin.derep.fa --sizeout --minseqlength 10; done
+ls *bin.derep.fa | sed 's/.bin.derep.fa//' | while read line; do vsearch --sortbysize $line.bin.derep.fa --output $line.bin.abundance.fa; done
 
 
 
-# pull reads from peaks 
+
+
+
 
